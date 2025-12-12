@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edusync Scheduler - DT Project</title>
+    <!-- Important for mobile sizing -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SIMPLE, CLEAN UI STYLING -->
+    <style>
+        :root {
+            --bg: #050816;
+            --card: #0b1220;
+            --card-soft: #111827;
+            --accent: #3b82f6;
+            --accent-soft: rgba(59,130,246,0.15);
+            --accent-strong: #2563eb;
+            --text-main: #e5e7eb;
+            --text-soft: #9ca3af;
+            --border-soft: #1f2937;
+            --danger: #ef4444;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
+            color: var(--text-main);
+        }
+        .shell {
+            max-width: 1100px;
+            margin: 24px auto 40px;
+            padding: 0 16px;
+        }
+        .card {
+            background: linear-gradient(135deg, rgba(15,23,42,0.98), rgba(15,23,42,0.92));
+            border-radius: 18px;
+            border: 1px solid rgba(148,163,184,0.25);
+            box-shadow: 0 18px 45px rgba(0,0,0,0.65);
+            overflow: hidden;
+        }
+        .card-inner {
+            padding: 22px 24px 28px;
+        }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.45);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--text-soft);
+            background: radial-gradient(circle at top left, rgba(96,165,250,0.15), transparent 55%);
+        }
+        .pill-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34,197,94,0.7);
+        }
+        h1 {
+            margin: 12px 0 0;
+            font-size: 28px;
+            letter-spacing: .03em;
+        }
+        h3 {
+            margin: 4px 0 16px;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-soft);
+        }
+        .grid-top {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin: 16px 0 10px;
+            font-size: 13px;
+            color: var(--text-soft);
+        }
+        .grid-top div {
+            padding: 8px 10px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid rgba(31,41,55,0.8);
+        }
+        .btn-row {
+            margin: 14px 0 6px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        button {
+            background: var(--accent);
+            color: #f9fafb;
+            border: none;
+            padding: 10px 18px; /* slightly larger for mobile */
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 7px 18px rgba(37,99,235,0.5);
+            transition: transform .08s ease-out, box-shadow .08s ease-out, background .1s;
+        }
+        button.subtle {
+            background: rgba(15,23,42,0.9);
+            border: 1px solid rgba(148,163,184,0.45);
+            color: var(--text-soft);
+            box-shadow: none;
+        }
+        button:hover {
+            transform: translateY(-1px);
+            background: var(--accent-strong);
+            box-shadow: 0 12px 30px rgba(37,99,235,0.75);
+        }
+        button.subtle:hover {
+            background: rgba(31,41,55,0.95);
+            box-shadow: 0 8px 20px rgba(15,23,42,0.9);
+        }
+        hr {
+            border: 0;
+            border-top: 1px solid rgba(31,41,55,0.85);
+            margin: 18px 0 20px;
+        }
+        p {
+            font-size: 13px;
+            color: var(--text-soft);
+            line-height: 1.5;
+        }
+        .tagline {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        form {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            padding: 14px 14px 10px;
+            background: rgba(15,23,42,0.9);
+            border-radius: 12px;
+            border: 1px solid rgba(31,41,55,0.85);
+        }
+        label {
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 7px 9px;
+            margin-top: 4px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(55,65,81,0.9);
+            background: #020617;
+            color: var(--text-main);
+            font-size: 13px;
+        }
+        /* Make only calendar & clock icons clearly visible */
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+        input[type="date"]::-moz-focus-inner,
+        input[type="time"]::-moz-focus-inner {
+            filter: invert(1);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        /* Table container for horizontal scroll on mobile */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            min-width: 650px; /* so it can scroll on small screens */
+            border-collapse: collapse;
+            margin: 10px 0 14px;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid rgba(31,41,55,0.9);
+            padding: 6px 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        th {
+            background: linear-gradient(135deg, rgba(30,64,175,0.85), rgba(15,23,42,0.98));
+            color: #e5e7eb;
+            font-weight: 500;
+        }
+        tr:nth-child(even) td {
+            background: rgba(15,23,42,0.95);
+        }
+        tr:nth-child(odd) td {
+            background: rgba(15,23,42,0.85);
+        }
+        .badge-soft {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(37,99,235,0.18);
+            border: 1px solid rgba(59,130,246,0.55);
+            font-size: 11px;
+        }
+        .danger-btn {
+            background: rgba(127,29,29,0.1);
+            color: #fecaca;
+            border: 1px solid rgba(248,113,113,0.6);
+            box-shadow: none;
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+        .danger-btn:hover {
+            background: rgba(248,113,113,0.18);
+            box-shadow: 0 6px 16px rgba(127,29,29,0.7);
+        }
+        .footer-note {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #6b7280;
+        }
+        @media (max-width: 720px) {
+            .card-inner {
+                padding: 18px 14px 22px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+            h3 {
+                font-size: 14px;
+            }
+            button {
+                width: 100%;          /* big tap targets on mobile */
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="shell">
+    <div class="card">
+        <!-- HOME PAGE -->
+        <div id="homePage" class="card-inner">
+            <span class="pill">
+                <span class="pill-dot"></span>
+                DT Project · FY B.Tech
+            </span>
+            <h1>Edusync Scheduler</h1>
+            <h3>Smart Teacher Availability & Doubt Booking</h3>
+
+            <div class="grid-top">
+                <div>Domain: Academic Support</div>
+                <div>Mode: Browser only · localStorage</div>
+                <div>Users: Teachers & Students</div>
+            </div>
+
+            <p class="tagline">
+                A simple multi-view prototype built with basic HTML, a small amount of JavaScript, and browser storage.
+                No external backend or database is used.
+            </p>
+
+            <div class="btn-row">
+                <button onclick="showPage('teacherPage')">
+                    👨‍🏫 Login as Teacher
+                </button>
+                <button onclick="showPage('studentPage')">
+                    🎓 Login as Student
+                </button>
+            </div>
+
+            <hr>
+
+            <h2>Project / Team Details</h2>
+            <p>
+                Course: Design Thinking (FY B.Tech) <br>
+                Project Title: <span class="badge-soft">Edusync Scheduler – Web-Based Teacher Availability and Doubt Booking System</span><br>
+                Group No.: 5<br>
+                College: MIT Alandi, Pune
+            </p>
+<h3>Team Members</h3>
+<ul style="list-style: none; padding-left: 0; font-size: 13px; color: #9ca3af;">
+    <li>Ganesh Chikane – PRN: 202501100149</li>
+    <li>Shripad Pathak – PRN: 202501100150</li>
+    <li>Punit Agrawal – PRN: 202501100151</li>
+    <li>Varsharani Patil – PRN: 202501100152</li>
+</ul>
+
+        </div>
+
+        <!-- TEACHER PAGE -->
+        <div id="teacherPage" class="card-inner" style="display:none;">
+            <span class="pill">
+                <span class="pill-dot"></span>
+                Teacher Panel
+            </span>
+            <h1>Manage Slots & Bookings</h1>
+            <div class="btn-row">
+                <button class="subtle" onclick="showPage('homePage')">⟵ Back to Home</button>
+            </div>
+                        <!-- Booked slots at top -->
+            <h2>Currently Booked Slots</h2>
+                       <div class="table-wrapper">
+                <table id="teacherBookedTable">
+                    <tr>
+                        <th>#</th>
+                        <th>Student</th>
+                        <th>PRN</th>
+                        <th>Teacher</th>
+                        <th>Subject</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Note / Doubt</th>
+                        <th>Action</th>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Available slots next -->
+            <h2>Currently Available Slots</h2>
+                       <div class="table-wrapper">
+                <table id="teacherAvailableTable">
+                    <tr>
+                        <th>#</th>
+                        <th>Teacher</th>
+                        <th>Subject</th>
+                        <th>Date</th>
+                        <th>From</th>
+                        <th>Till</th>
+                        <th>Note</th>
+                        <th>Action</th>
+                    </tr>
+                </table>
+            </div>
+
+            <h2>Add New Available Slot</h2>
+                        <form id="teacherAvailabilityForm">
+                <label>Teacher Name</label><br>
+                <input type="text" id="t_name" required><br>
+
+                <label>Subject</label><br>
+                <input type="text" id="t_subject" placeholder="e.g. Maths, Physics" required><br>
+
+                <label>Date</label><br>
+                <input type="date" id="t_date" required><br>
+
+                <label>From (Time)</label><br>
+                <input type="time" id="t_from" required><br>
+
+                <label>Till (Time)</label><br>
+                <input type="time" id="t_till" required><br>
+
+                <label>Extra Note (Room / Online link / Special instructions)</label><br>
+                <input type="text" id="t_note" placeholder="Room 204 / Google Meet"><br>
+
+                <button type="submit">➕ Add Slot</button>
+                <button class="subtle" type="reset">Clear</button>
+            </form>
+        </div>
+
+        <!-- STUDENT PAGE -->
+        <div id="studentPage" class="card-inner" style="display:none;">
+            <span class="pill">
+                <span class="pill-dot"></span>
+                Student Panel
+            </span>
+            <h1>Find a Teacher & Book Slot</h1>
+            <div class="btn-row">
+                <button class="subtle" onclick="showPage('homePage')">⟵ Back to Home</button>
+            </div>
+                        <!-- Available slots at top -->
+            <h2>Currently Available Slots</h2>
+                        <div class="table-wrapper">
+                <table id="studentAvailableTable">
+                    <tr>
+                        <th>#</th>
+                        <th>Teacher</th>
+                        <th>Subject</th>
+                        <th>Date</th>
+                        <th>From</th>
+                        <th>Till</th>
+                        <th>Note</th>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Booked slots next -->
+            <h2>Currently Booked Slots</h2>
+                        <div class="table-wrapper">
+                <table id="studentBookedTable">
+                    <tr>
+                        <th>#</th>
+                        <th>Student</th>
+                        <th>PRN</th>
+                        <th>Teacher</th>
+                        <th>Subject</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Note / Doubt</th>
+                    </tr>
+                </table>
+            </div>
+
+            <h2>Book a Slot</h2>
+            <form id="studentBookingForm">
+                <label>Student Name</label><br>
+                <input type="text" id="s_name" required><br>
+
+                <label>PRN / Roll No</label><br>
+                <input type="text" id="s_prn" required><br>
+
+                <label>Select Teacher</label><br>
+                <select id="teacherSelect" required>
+                    <option value="">-- Select Teacher --</option>
+                </select><br>
+
+                <label>Select Available Slot (of chosen teacher)</label><br>
+                <select id="slotSelect" required>
+                    <option value="">-- Select Slot --</option>
+                </select><br>
+
+                <label>Short Description of Doubt</label><br>
+                <textarea id="s_doubt" rows="4" cols="40"></textarea><br>
+
+                <button type="submit">✅ Book Slot</button>
+                <button class="subtle" type="reset">Clear</button>
+            </form>
+
+         </div>
+    </div>
+</div>
+
+<!-- SCRIPT: LOGIC UNCHANGED -->
+<script>
+    const SLOTS_KEY = "edusync_slots_v3";
+    const BOOKINGS_KEY = "edusync_bookings_v3";
+
+    let currentPage = "homePage";
+
+    function showPage(pageId) {
+        document.getElementById("homePage").style.display = "none";
+        document.getElementById("teacherPage").style.display = "none";
+        document.getElementById("studentPage").style.display = "none";
+
+        document.getElementById(pageId).style.display = "block";
+        currentPage = pageId;
+
+        renderAll();
+    }
+
+    function getSlots() {
+        const data = localStorage.getItem(SLOTS_KEY);
+        return data ? JSON.parse(data) : [];
+    }
+
+    function saveSlots(slots) {
+        localStorage.setItem(SLOTS_KEY, JSON.stringify(slots));
+    }
+
+    function getBookings() {
+        const data = localStorage.getItem(BOOKINGS_KEY);
+        return data ? JSON.parse(data) : [];
+    }
+
+    function saveBookings(bookings) {
+        localStorage.setItem(BOOKINGS_KEY, JSON.stringify(bookings));
+    }
+
+    function cleanOldBookings() {
+        let bookings = getBookings();
+        const now = new Date();
+
+        bookings = bookings.filter(b => {
+            const fromPart = b.time.split("-")[0];
+            const dtString = b.date + "T" + fromPart;
+            const bookingTime = new Date(dtString);
+            return bookingTime >= now;
+        });
+
+        saveBookings(bookings);
+    }
+
+    function cleanOldSlots() {
+        let slots = getSlots();
+        const now = new Date();
+
+        slots = slots.filter(s => {
+            const dtString = s.date + "T" + s.till;
+            const slotEnd = new Date(dtString);
+            return slotEnd >= now;
+        });
+
+        saveSlots(slots);
+    }
+
+    function renderTeacherTables() {
+        const slots = getSlots();
+        const bookings = getBookings();
+
+        const tAvail = document.getElementById("teacherAvailableTable");
+        const tBook = document.getElementById("teacherBookedTable");
+
+        tAvail.innerHTML = `
+            <tr>
+                <th>#</th>
+                <th>Teacher</th>
+                <th>Subject</th>
+                <th>Date</th>
+                <th>From</th>
+                <th>Till</th>
+                <th>Note</th>
+                <th>Action</th>
+            </tr>
+        `;
+        tBook.innerHTML = `
+            <tr>
+                <th>#</th>
+                <th>Student</th>
+                <th>PRN</th>
+                <th>Teacher</th>
+                <th>Subject</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Note / Doubt</th>
+                <th>Action</th>
+            </tr>
+        `;
+
+        slots.forEach((slot, index) => {
+            const row = tAvail.insertRow();
+            row.insertCell(0).innerText = index + 1;
+            row.insertCell(1).innerText = slot.teacher;
+            row.insertCell(2).innerText = slot.subject;
+            row.insertCell(3).innerText = slot.date;
+            row.insertCell(4).innerText = slot.from;
+            row.insertCell(5).innerText = slot.till;
+            row.insertCell(6).innerText = slot.note || "";
+
+            const actionCell = row.insertCell(7);
+            const btn = document.createElement("button");
+            btn.className = "danger-btn";
+            btn.innerText = "Delete";
+            btn.onclick = function() {
+                deleteSlot(slot.id);
+            };
+            actionCell.appendChild(btn);
+        });
+
+        bookings.forEach((b, index) => {
+            const row = tBook.insertRow();
+            row.insertCell(0).innerText = index + 1;
+            row.insertCell(1).innerText = b.student;
+            row.insertCell(2).innerText = b.prn;
+            row.insertCell(3).innerText = b.teacher;
+            row.insertCell(4).innerText = b.subject;
+            row.insertCell(5).innerText = b.date;
+            row.insertCell(6).innerText = b.time;
+            row.insertCell(7).innerText = b.doubt || "";
+            const actionCell = row.insertCell(8);
+            const btn = document.createElement("button");
+            btn.className = "danger-btn";
+            btn.innerText = "Delete";
+            btn.onclick = function() {
+                deleteBooking(b.id);
+            };
+            actionCell.appendChild(btn);
+        });
+    }
+
+    function renderStudentView() {
+        const slots = getSlots();
+        const bookings = getBookings();
+
+        const sAvail = document.getElementById("studentAvailableTable");
+        const sBook = document.getElementById("studentBookedTable");
+        const teacherSelect = document.getElementById("teacherSelect");
+        const slotSelect = document.getElementById("slotSelect");
+
+        sAvail.innerHTML = `
+            <tr>
+                <th>#</th>
+                <th>Teacher</th>
+                <th>Subject</th>
+                <th>Date</th>
+                <th>From</th>
+                <th>Till</th>
+                <th>Note</th>
+            </tr>
+        `;
+        sBook.innerHTML = `
+            <tr>
+                <th>#</th>
+                <th>Student</th>
+                <th>PRN</th>
+                <th>Teacher</th>
+                <th>Subject</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Note / Doubt</th>
+            </tr>
+        `;
+
+        teacherSelect.innerHTML = `<option value="">-- Select Teacher --</option>`;
+        slotSelect.innerHTML = `<option value="">-- Select Slot --</option>`;
+
+        const teacherNames = [];
+
+        slots.forEach((slot, index) => {
+            const row = sAvail.insertRow();
+            row.insertCell(0).innerText = index + 1;
+            row.insertCell(1).innerText = slot.teacher;
+            row.insertCell(2).innerText = slot.subject;
+            row.insertCell(3).innerText = slot.date;
+            row.insertCell(4).innerText = slot.from;
+            row.insertCell(5).innerText = slot.till;
+            row.insertCell(6).innerText = slot.note || "";
+
+            if (!teacherNames.includes(slot.teacher)) {
+                teacherNames.push(slot.teacher);
+            }
+        });
+
+        teacherNames.forEach(name => {
+            const opt = document.createElement("option");
+            opt.value = name;
+            opt.text = name;
+            teacherSelect.appendChild(opt);
+        });
+
+        bookings.forEach((b, index) => {
+            const row = sBook.insertRow();
+            row.insertCell(0).innerText = index + 1;
+            row.insertCell(1).innerText = b.student;
+            row.insertCell(2).innerText = b.prn;
+            row.insertCell(3).innerText = b.teacher;
+            row.insertCell(4).innerText = b.subject;
+            row.insertCell(5).innerText = b.date;
+            row.insertCell(6).innerText = b.time;
+            row.insertCell(7).innerText = b.doubt || "";
+        });
+    }
+
+    function renderSlotsForSelectedTeacher() {
+        const selectedTeacher = document.getElementById("teacherSelect").value;
+        const slotSelect = document.getElementById("slotSelect");
+        const slots = getSlots();
+
+        slotSelect.innerHTML = `<option value="">-- Select Slot --</option>`;
+        if (!selectedTeacher) return;
+
+        const filtered = slots.filter(s => s.teacher === selectedTeacher);
+
+        filtered.forEach(slot => {
+            const opt = document.createElement("option");
+            opt.value = slot.id;
+            opt.text = `${slot.date} ${slot.from}-${slot.till} | ${slot.subject} | ${slot.note || ""}`;
+            slotSelect.appendChild(opt);
+        });
+    }
+
+    function deleteSlot(id) {
+        let slots = getSlots();
+        slots = slots.filter(s => s.id !== id);
+        saveSlots(slots);
+        renderAll();
+    }
+
+    function deleteBooking(id) {
+        let bookings = getBookings();
+        bookings = bookings.filter(b => b.id !== id);
+        saveBookings(bookings);
+        renderAll();
+    }
+
+    function renderAll() {
+        cleanOldSlots();
+        cleanOldBookings();
+
+        if (currentPage === "teacherPage") {
+            renderTeacherTables();
+        } else if (currentPage === "studentPage") {
+            renderStudentView();
+        }
+    }
+
+    document.getElementById("teacherAvailabilityForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const tName = document.getElementById("t_name").value.trim();
+        const tSubject = document.getElementById("t_subject").value.trim();
+        const tDate = document.getElementById("t_date").value;
+        const tFrom = document.getElementById("t_from").value;
+        const tTill = document.getElementById("t_till").value;
+        const tNote = document.getElementById("t_note").value.trim();
+
+        if (!tName || !tSubject || !tDate || !tFrom || !tTill) {
+            alert("Please fill all required fields.");
+            return;
+        }
+
+        const slots = getSlots();
+        slots.push({
+            id: Date.now().toString(),
+            teacher: tName,
+            subject: tSubject,
+            date: tDate,
+            from: tFrom,
+            till: tTill,
+            note: tNote
+        });
+        saveSlots(slots);
+
+        this.reset();
+        renderAll();
+    });
+
+    document.getElementById("teacherSelect").addEventListener("change", function() {
+        renderSlotsForSelectedTeacher();
+    });
+
+    document.getElementById("studentBookingForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const sName = document.getElementById("s_name").value.trim();
+        const sPrn = document.getElementById("s_prn").value.trim();
+        const sDoubt = document.getElementById("s_doubt").value.trim();
+        const slotId = document.getElementById("slotSelect").value;
+
+        if (!sName || !sPrn || !slotId) {
+            alert("Please fill student details and select a slot.");
+            return;
+        }
+
+        let slots = getSlots();
+        const slot = slots.find(s => s.id === slotId);
+        if (!slot) {
+            alert("Selected slot not found or already booked.");
+            renderAll();
+            return;
+        }
+
+        const bookings = getBookings();
+        bookings.push({
+            id: Date.now().toString(),
+            student: sName,
+            prn: sPrn,
+            doubt: sDoubt,
+            teacher: slot.teacher,
+            subject: slot.subject,
+            date: slot.date,
+            time: slot.from + "-" + slot.till,
+            note: slot.note
+        });
+        saveBookings(bookings);
+
+        slots = slots.filter(s => s.id !== slotId);
+        saveSlots(slots);
+
+        this.reset();
+        renderAll();
+    });
+
+    renderAll();
+</script>
+
+</body>
+</html>
